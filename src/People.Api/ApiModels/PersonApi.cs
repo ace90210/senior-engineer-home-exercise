@@ -18,11 +18,11 @@ namespace People.Api.ApiModels
     public record PersonApi(
         int Id,
 
-        [Required]
-        [StringLength(DataConstants.MaxNameLength, MinimumLength = DataConstants.MinNameLength)]
+        [property: Required(AllowEmptyStrings = false)]
+        [property: StringLength(DataConstants.MaxNameLength, MinimumLength = DataConstants.MinNameLength)]
         string Name,
 
-        [Required]
+        [property: Required]
         DateOnly DateOfBirth) : IValidatableObject
     {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -130,7 +130,7 @@ namespace People.Tests
 
             var invalidPerson = new
             {
-                name = "", // Invalid: empty name
+                name = "",
                 dateOfBirth = "1990-05-15"
             };
 

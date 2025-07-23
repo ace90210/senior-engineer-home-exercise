@@ -16,11 +16,11 @@ namespace People.Api.ApiModels
     /// and introducing abstraction would add unnecessary complexity.
     /// </summary>
     public record CreateUpdatePersonApi(
-        [Required]
-        [StringLength(DataConstants.MaxNameLength, MinimumLength = DataConstants.MinNameLength)]
+        [property: Required]
+        [property: StringLength(DataConstants.MaxNameLength, MinimumLength = DataConstants.MinNameLength)]
         string Name,
 
-        [Required]
+        [property: Required]
         DateOnly DateOfBirth) : IValidatableObject
     {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

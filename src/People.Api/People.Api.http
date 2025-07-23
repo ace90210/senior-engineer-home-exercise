@@ -13,8 +13,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "name": null,
-  "dateOfBirth": null
+  "name": "",
+  "dateOfBirth": "1999-01-02"
 }
 
 ###

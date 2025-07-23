@@ -1,6 +1,136 @@
-@People.Api_HostAddress = http://localhost:5276
+﻿@People.Api_HostAddress = http://localhost:5276
 
-GET {{People.Api_HostAddress}}/weatherforecast/
+### 🟢 Get all people
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+
+### 🟢 Create a new person - bad request
+POST {{People.Api_HostAddress}}/people
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": null,
+  "dateOfBirth": null
+}
+
+###
+
+### 🟢 Confirm not added
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🟢 Create a new person - valid
+POST {{People.Api_HostAddress}}/people
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "John Doe",
+  "dateOfBirth": "1990-05-15"
+}
+
+###
+
+### 🟢 confirm person 1 added
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🟡 Update an existing person - does not exist
+PUT {{People.Api_HostAddress}}/people/3
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Johnathan Doe",
+  "dateOfBirth": "1990-05-15"
+}
+
+###
+
+### 🟢 confirm person 1 not changed
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🟢 Create second new person 2
+POST {{People.Api_HostAddress}}/people
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Jane Smith",
+  "dateOfBirth": "1991-01-15"
+}
+
+###
+
+### 🟢 confirm both people exist
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🟡 Update existing person 2
+PUT {{People.Api_HostAddress}}/people/2
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Jane Smith 2",
+  "dateOfBirth": "1990-02-15"
+}
+
+###
+
+### 🟢 confirm person 2 updated
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🔴 Delete a person - does not exist
+DELETE {{People.Api_HostAddress}}/people/3
+Accept: application/json
+
+###
+
+### 🟢confirm no one deleted
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🔴 Delete person 2
+DELETE {{People.Api_HostAddress}}/people/2
+Accept: application/json
+
+###
+
+
+### 🟢 confirm person 2 gone
+GET {{People.Api_HostAddress}}/people
+Accept: application/json
+
+###
+
+### 🔴 Delete person 1
+DELETE {{People.Api_HostAddress}}/people/1
+Accept: application/json
+
+###
+
+
+### 🟢 confirm all deleted
+GET {{People.Api_HostAddress}}/people
 Accept: application/json
 
 ###

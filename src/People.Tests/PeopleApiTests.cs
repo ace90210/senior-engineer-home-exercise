@@ -13,19 +13,26 @@ namespace People.Tests
     {
         private readonly WebApplicationFactory<Program> _factory;
 
+        private readonly string _dbName = "TestDb_" + Guid.NewGuid();
+
         public PeopleApiTests(WebApplicationFactory<Program> factory)
         {
+            // Configure the factory once for all tests in this class
             _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
                 {
-                    // Replace real DB with EF Core InMemory DB
-                    services.Remove(services.Single(
-                        d => d.ServiceType == typeof(DbContextOptions<Context>)));
+                    // Find and remove the original DbContext registration
+                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<Context>));
+                    if (descriptor != null)
+                    {
+                        services.Remove(descriptor);
+                    }
 
+                    // Add a new DbContext registration that uses a single, shared in-memory database
                     services.AddDbContext<Context>(options =>
                     {
-                        options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid());
+                        options.UseInMemoryDatabase(_dbName);
                     });
                 });
             });
@@ -92,7 +99,7 @@ namespace People.Tests
 
             var response = await client.PutAsJsonAsync("/people/1", updatedPerson);
 
-            response.EnsureSuccessStatusCode(); // 200 OK
+            response.EnsureSuccessStatusCode(); 
             var updated = await response.Content.ReadFromJsonAsync<PersonApi>();
 
             Assert.NotNull(updated);
@@ -107,6 +114,10 @@ namespace People.Tests
             await SeedTestData(db);
 
             var client = _factory.CreateClient();
+
+            var newPerson = new CreateUpdatePersonApi("Jane Doe", new DateOnly(1995, 3, 10));
+
+            await client.PostAsJsonAsync("/people", newPerson);
 
             var response = await client.DeleteAsync("/people/1");
 

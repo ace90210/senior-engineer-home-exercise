@@ -53,7 +53,7 @@ namespace People.Api.Extensions
                     return Results.NotFound();
                 }
 
-                return Results.Ok();
+                return Results.NoContent();
             })
             .WithName("DeletePerson")
             .WithOpenApi();

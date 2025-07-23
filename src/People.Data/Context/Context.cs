@@ -7,6 +7,6 @@ namespace People.Data.Context
     {
         public Context(DbContextOptions<Context> options) : base(options) { }
 
-        public DbSet<Person> MyEntities { get; set; }
+        public DbSet<Person> Persons { get; set; }
     }
 }

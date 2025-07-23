@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using People.Api.ApiModels;
+using People.Api.Extensions;
 using People.Api.Services;
 using People.Data.Context;
 
@@ -9,11 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<Context>(options =>
     options.UseInMemoryDatabase("InMemoryDb"));
 
 builder.Services.AddScoped<IPeopleService, PeopleService>();
+
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -26,16 +29,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/people", async () =>
+app.MapPeopleEndpoints();
+
+if (!app.Environment.IsDevelopment())
 {
-    var people = new List<PersonApi>
-        {
-            new PersonApi(1, "Example", DateOnly.FromDateTime(DateTime.Now))
-        };
-    return people;
-})
-    .WithName("GetAllPeople")
-    .WithOpenApi();
+    app.UseExceptionHandler();
+}
+app.UseStatusCodePages();
+
+app.MapHealthChecks("/health");
 
 app.Run();
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using People.Api.ApiModels;
+using People.Api.Services;
 using People.Data.Context;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<Context>(options =>
     options.UseInMemoryDatabase("InMemoryDb"));
+
+builder.Services.AddScoped<IPeopleService, PeopleService>();
 
 var app = builder.Build();
 
@@ -24,13 +27,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapGet("/people", async () =>
-    {
-        var people = new List<PersonApi>
+{
+    var people = new List<PersonApi>
         {
-            new PersonApi(1, "Example")
+            new PersonApi(1, "Example", DateOnly.FromDateTime(DateTime.Now))
         };
-        return people;
-    })
+    return people;
+})
     .WithName("GetAllPeople")
     .WithOpenApi();
 

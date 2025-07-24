@@ -1,138 +1,180 @@
-# Senior Engineer Take‑Home Exercise: People API
+# People.API – Take‑Home Assessment
 
-## Summary
+## 📌 Overview
 
-Build and containerise a small .NET service, then spin up a self‑hosted TeamCity CI stack that builds it via Kotlin DSL.
+This is a small CRUD API built using **.NET 8 Minimal API**, intended to demonstrate containerization and CI pipeline setup with **TeamCity** via **Kotlin DSL**, as outlined in the take-home brief.
 
-**Environment**  
-Assessed on Windows 11 with WSL 2 and Docker’s Linux backend. All images must be Linux (`linux/amd64`). Windows‑container images will not be accepted.
+The solution provides:
 
-**Starter kit** – already provided
-
-- Template solution with three projects: People.Api, People.Data, People.Tests
-    
-- EF Core In-Memory provider wired into People.Api
-    
-- Complete folder structure shown under Deliverables
-    
-
-Focus on implementing the logic, Docker image, and CI pipeline rather than scaffolding.
-
-## Part 1 – API
-
-- **Language**  C# (.NET 8 minimal API, target framework `net8.0`).
-    
-- **Endpoints** – implement endpoints (considering HTTP semantics) to perform the following functions:
-    
-    - Add
-        
-    - Update
-        
-    - Delete
-        
-    - List
-        
-- Model `{ Id: int, Name: string, DateOfBirth: DateOnly }` Use an in‑memory SQL database (e.g., EF Core InMemory provider - already setup).
-    
-- Add a self‑documenting endpoint (Swagger/OpenAPI).
-    
-- Implement a lightweight `/health` endpoint that returns HTTP 200 OK liveness checks.
-    
-- Provide unit tests in a dedicated People.Tests project under `src/` (xUnit + FluentAssertions or equivalent).
-    
+* An API to manage people records with basic validation.
+* Dockerized deployment.
+* A partially implemented TeamCity CI stack with room for expansion.
 
 ---
 
-## Part 2 – Dockerfiles & Compose
+## 🚀 Quick Start
 
-### Runtime container
+### Local API Usage
 
-- Supply a multi‑stage `Dockerfile` that:
-    
-    1. Builds & self‑publishes for `linux‑x64` (trimmed/self‑contained if you target Alpine).
-        
-    2. Runs as non‑root in a lightweight base (e.g., `gcr.io/distroless/dotnet‑aspnet` or `mcr.microsoft.com/dotnet/aspnet:8.0‑alpine`).
-        
-- Container listens on 8080 internally and exposes the same port; honour `DOTNET_ENVIRONMENT` env var.
-    
-- Add a minimal `docker-compose.yml` that maps host 8080 to container 8080 (`8080:8080`) so `docker compose up` starts the API locally.
-    
+You can start the API locally using Docker:
 
-### Agent container
+```bash
+docker compose up
+```
 
-- Provide `Dockerfile.agent` based on `jetbrains/teamcity-agent:latest`; install the Docker CLI and ensure the agent mounts `/var/run/docker.sock` at runtime so build steps can invoke `docker build` and `docker push`. Your `compose.ci.yml` must reference this file via a `build:` section so the image is built automatically when reviewers run `docker compose -f compose.ci.yml up`.
-    
+Then navigate to:
+
+* **Swagger UI**: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+* **Health Check**: [http://localhost:8080/health](http://localhost:8080/health)
+
+> Health check returns HTTP `200 OK` for basic liveness verification.
+
+### API Capabilities
+
+This is a minimal CRUD API that supports:
+
+* `POST /people`: Add a new person
+* `GET /people`: List all people
+* `PUT /people/{id}`: Update a person by ID
+* `DELETE /people/{id}`: Delete a person by ID
+
+Request payloads follow:
+
+```json
+{
+  "name": "John Doe",
+  "dateOfBirth": "1990-01-01"
+}
+```
+
+Validation is in place for name length and required fields.
 
 ---
 
-## Part 3 – TeamCity CI stack (server + agent + pipeline)
+## ✅ Implementation Summary
 
-- Provide a separate `compose.ci.yml` file that launches:
-    
-    - `teamcity-server` – based on `jetbrains/teamcity-server:latest`, listening on localhost:8111.
-        
-    - `teamcity-agent` – built automatically from `Dockerfile.agent` (which should start `FROM jetbrains/teamcity-agent:latest`). It must auto‑register with the server, be pre‑configured for .NET 8 builds, and include the Docker CLI while mounting `/var/run/docker.sock` so build steps can run `docker build` and `docker push`.
-        
-    - `registry` – lightweight local Docker registry (`registry`) listening on localhost:5000. Run in its default open (no‑auth) mode over HTTP; that’s acceptable for this local exercise. The pipeline must push the built image here.
-        
-- After the containers are up and the license is accepted, when we're assessing this we will:
-    
-    1. Add a VCS root pointing at the repository.
-        
-    2. Import the Kotlin DSL project (which you committed under `/.teamcity` - see next bullet).
-        
-- In `/.teamcity` create a single build configuration that:
-    
-    1. Restores, builds, and tests the solution.
-        
-    2. Builds the Docker image tagged `people-api:%build.number%`.
-        
-    3. Pushes the image (unauthenticated HTTP) to `localhost:5000/people-api:%build.number%` and stores `image.digest` as the build artifact.
-        
-- Provide a PowerShell script `build.ps1` containing a `ci-up` function/task that spins up the CI stack and waits until `http://localhost:8111` responds 200 OK.
-    
-- Document the one‑liner in the README:
-    
+### ✔ API Implementation
 
-```sh
-Docker compose -f compose.ci.yml up -d && open http://localhost:8111
+* Built using **.NET 8 Minimal API** with clean separation of logic.
+* Model: `{ Id: int, Name: string, DateOfBirth: DateOnly }`.
+* **Validation** is implemented, with mindful avoidance of over-engineering (e.g. no repository pattern or caching).
+* **Swagger (OpenAPI)** integrated.
+* **Http testing file** added examples for all scenarios
+* **Health endpoint** provided at `/health`.
+
+> ⚠️ **Challenge**: Validation using `record` types in minimal APIs doesn't work cleanly with data annotations due to model binding quirks. Debugging this cost about an hour. I pivoted to using standard objects for reliable behavior.
+
+### ✔ Unit Testing
+
+* Used `WebApplicationFactory` to support integration-style testing of minimal APIs.
+* This approach enables full-stack HTTP request testing without exposing internal logic unnecessarily.
+* Only basic tests included due to time prioritization for Docker/CI efforts.
+
+---
+
+## 🐳 Dockerization
+
+### Dockerfile
+
+* Multi-stage `Dockerfile` implemented.
+* Self-contained `linux-x64` build.
+* Runs as **non-root** using `mcr.microsoft.com/dotnet/aspnet:8.0-alpine`.
+* Internal + external port: `8080`.
+
+### docker-compose.yml
+
+```yaml
+ports:
+  - "8080:8080"
+```
+
+Enables `docker compose up` to start the API locally.
+
+---
+
+## ⚙️ TeamCity CI Stack
+
+### What’s Completed
+
+* Created `compose.ci.yml` to spin up:
+
+  * `teamcity-server` (on port 8111)
+  * `teamcity-agent` from `Dockerfile.agent`
+  * Local Docker `registry` (on port 5000)
+* Agent has Docker CLI installed and mounts `/var/run/docker.sock`.
+
+### In Progress / Blockers
+
+* **Kotlin DSL** (`/.teamcity/settings.kts`) setup was **not completed** due to lack of prior experience.
+* Initial Kotlin files were started but **did not compile** correctly.
+* Spent significant time troubleshooting, but with limited Kotlin DSL experience and timebox constraints (4h), I was unable to complete this portion.
+
+> I relied on AI tools for Kotlin DSL scaffolding, but they did not generate a working setup. This was the main area I fell short on.
+
+---
+
+## 🛠️ build.ps1
+
+A PowerShell helper script is provided to bring up the CI stack and poll readiness:
+
+```ps1
+ci-up
+```
+
+Or manually:
+
+```bash
+docker compose -f compose.ci.yml up -d && open http://localhost:8111
 ```
 
 ---
 
-## Deliverables
+## 🧾 Deliverable Structure
 
 ```
 ├── .teamcity/
-│   └── settings.kts         # Kotlin DSL build definition
+│   └── settings.kts         # (incomplete) Kotlin DSL config
 ├── src/
-│   ├── People.Api/          # ASP.NET Core Minimal API project
-│   ├── People.Data/         # EF Core in‑memory database layer
-│   └── People.Tests/        # unit test project
-├── build.ps1                # ci-up helper
-├── compose.ci.yml           # spins up TeamCity server + agent + registry
-├── docker-compose.yml       # runs the API locally
-├── Dockerfile               # runtime image for the API
-├── Dockerfile.agent         # custom agent with Docker CLI
-└── README.md                # This document - replace with your own comments
+│   ├── People.Api/
+│   ├── People.Data/
+│   └── People.Tests/
+├── build.ps1
+├── compose.ci.yml
+├── docker-compose.yml
+├── Dockerfile
+├── Dockerfile.agent
+└── README.md
 ```
 
-`docker compose up` must start the API and `/health` should return 200 OK. Running `docker compose -f compose.ci.yml up -d` must bring up TeamCity so we can watch the pipeline execute.
+---
+
+## 📉 Tradeoffs
+
+| Area            | Summary                                                                    |
+| --------------- | -------------------------------------------------------------------------- |
+| Time Management | Prioritized working API and Docker setup over complete CI/Kotlin coverage. |
+| Testing         | Added only basic test cases due to time constraints.                       |
+| CI/CD           | TeamCity agent/server/registry boot OK. Kotlin DSL remains incomplete.     |
+| Learning Gap    | Kotlin DSL was unfamiliar; needed more ramp-up time to deliver end-to-end. |
 
 ---
 
-## Evaluation criteria
+## 🏁 Final Notes
 
-|Area|What we look for|
-|---|---|
-|Code clarity & idiomatic C#|Separation of concerns, correct HTTP codes, validation & maintainable code|
-|Tests & docs|Useful test cases, swagger docs, readme with clear instructions|
-|Docker image hygiene|Small, non‑root, multi‑stage, no secrets|
-|CI stack completeness|TeamCity server & agent self‑contained, ready for pipline import|
-|Build automation (Kotlin DSL)|Kotlin DSL which pushes to registry|
+I hit some challenges and this is far from my best work sadly a number of compounding challenges delayed me more than expected. they included
+* using records with validation was new to me and had unexpected quirks
+* moving the docker file to the root combined with my mistake using the auto generated docker and moving it, i normally keep it in the project, i know how to move it but didnt realise the pre built docker project *really* does not like being moved and caused me all sorts or trouble before i just removed and did it manually
+* had no time to learn kotlin so was unable to get it working
 
----
 
-**Time boxing** – Aim for a maximum of 4 hours. Document any trade‑offs if you can't complete everything.
+If given additional time, I would focus next on:
 
-**Submission** – Share the Git repo URL plus any noteworthy caveats in the README.
+* Finishing the Kotlin DSL build steps and registry push.
+* Expanding unit test coverage.
+* Adding input model separation and improved validation handling for minimal API idioms.
+
+If this was a early production prototype i would
+* Implement caching with redis
+* Create a deployment pipeline
+* implement a real EF provider
+* lots more

@@ -1,43 +1,49 @@
-# Stage 1: Define the final, lean runtime environment
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+# ────────────────────────────────
+# Stage 1 – lean runtime image
+# ────────────────────────────────
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 WORKDIR /app
 EXPOSE 8080
 
-# Create a non-root user and group
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+# Create an unprivileged user (Alpine busy‑box utilities)
+RUN addgroup -S appgroup \
+ && adduser  -S appuser -G appgroup
 
-# ---
-# Stage 2: Build the application using the SDK image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# ────────────────────────────────
+# Stage 2 – build & publish
+# ────────────────────────────────
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
-# Copy solution and project files first to leverage Docker layer caching.
-# This ensures 'dotnet restore' is only re-run when dependencies change.
-COPY ["*.sln", "."]
-COPY ["src/People.Api/People.Api.csproj", "src/People.Api/"]
-COPY ["src/People.Data/People.Data.csproj", "src/People.Data/"]
-COPY ["src/People.Tests/People.Tests.csproj", "src/People.Tests/"]
+# 1️⃣ Copy the solution file from *src* (matches your folder structure)
+COPY src/People.sln .
 
-# Restore dependencies for the entire solution
-RUN dotnet restore "./People.sln"
+# 2️⃣ Copy project files (keeps Docker layer cache effective)
+COPY src/People.Api/People.Api.csproj   People.Api/
+COPY src/People.Data/People.Data.csproj People.Data/
+COPY src/People.Tests/People.Tests.csproj People.Tests/
 
-# Copy the rest of the application's source code
-COPY . .
+RUN ls -l
 
-# Publish the API project, creating the final output
-RUN dotnet publish "./src/People.Api/People.Api.csproj" -c Release -o /app/publish --no-restore
+# 3️⃣ Restore NuGet packages just once
+RUN dotnet restore People.sln
 
-# ---
-# Stage 3: Create the final production image from the base
+# 4️⃣ Bring in the remaining source
+COPY src/ .
+
+# 5️⃣ Build & publish the API project
+RUN dotnet publish People.Api/People.Api.csproj \
+    -c Release \
+    -o /app/publish
+
+# ────────────────────────────────
+# Stage 3 – final production image
+# ────────────────────────────────
 FROM base AS final
-
-# Copy the published output from the build stage
-# and set ownership to the non-root user
 WORKDIR /app
+
+# Copy published output from the build stage and set ownership
 COPY --from=build --chown=appuser:appgroup /app/publish .
 
-# Switch to the non-root user
 USER appuser
-
-# Set the entrypoint for the container
 ENTRYPOINT ["dotnet", "People.Api.dll"]

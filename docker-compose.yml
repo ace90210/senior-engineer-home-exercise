@@ -1,6 +1,10 @@
 services:
   people.api:
-    image: ${DOCKER_REGISTRY-}peopleapi
+    image: peopleapi # Or whatever your image name is
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "8081:8080"

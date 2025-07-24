@@ -24,8 +24,8 @@ docker compose up
 
 Then navigate to:
 
-* **Swagger UI**: [http://localhost:8080/swagger](http://localhost:8080/swagger)
-* **Health Check**: [http://localhost:8080/health](http://localhost:8080/health)
+* **Swagger UI**: [http://localhost:8081/swagger](http://localhost:8080/swagger)
+* **Health Check**: [http://localhost:8081/health](http://localhost:8080/health)
 
 > Health check returns HTTP `200 OK` for basic liveness verification.
 

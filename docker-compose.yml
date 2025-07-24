@@ -1,1 +1,6 @@
-ÿþ
+services:
+  people.api:
+    image: ${DOCKER_REGISTRY-}peopleapi
+    build:
+      context: .
+      dockerfile: Dockerfile

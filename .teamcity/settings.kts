@@ -65,27 +65,28 @@ open class BuildWebBase(
             param("system.InvariantGlobalization", "true")
         }
 
-        steps {
-            dotnet {
-                this.name = "Restore"
-                this.command = DotnetCommandType.Restore
-                this.projects = "src/People.sln"
-            }
+      steps {
+    step {
+        type = "dotnet"
+        param("command", "restore")
+        param("projects", "src/People.sln")
+    }
 
-            dotnet {
-                this.name = "Build"
-                this.command = DotnetCommandType.Build
-                this.projects = "src/People.sln"
-                this.args = "--configuration ${Settings.configuration}"
-            }
+    step {
+        type = "dotnet"
+        param("command", "build")
+        param("projects", "src/People.sln")
+        param("args", "--configuration ${Settings.configuration}")
+    }
 
-            dotnet {
-                this.name = "Test"
-                this.command = DotnetCommandType.Test
-                this.projects = "src/People.sln"
-                this.args = "--configuration ${Settings.configuration} --logger trx --results-directory test-results"
-            }
-        }
+    step {
+        type = "dotnet"
+        param("command", "test")
+        param("projects", "src/People.sln")
+        param("args", "--configuration ${Settings.configuration} --logger trx --results-directory test-results")
+    }
+}
+
 
         artifactRules = "test-results => test-results"
 

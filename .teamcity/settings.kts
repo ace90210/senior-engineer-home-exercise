@@ -1,9 +1,26 @@
-import jetbrains.buildServer.configs.kotlin.v2023_05.*
-import jetbrains.buildServer.configs.kotlin.v2023_05.buildSteps.dotnet
-import jetbrains.buildServer.configs.kotlin.v2023_05.triggers.vcs
-import jetbrains.buildServer.configs.kotlin.v2023_05.vcs.GitVcsRoot
+import jetbrains.buildServer.configs.kotlin.v2025_07.*
+import jetbrains.buildServer.configs.kotlin.v2023_07.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.v2023_07.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.v2023_07.vcs.*
 
-version = "2023.05"
+version = "2025.07"
+
+
+// Build settings
+open class Settings {
+    companion object {
+        const val configuration = "Release"
+
+        const val gitRepo = "https://github.com/ace90210/senior-engineer-home-exercise.git"
+        const val gitBranch = "refs/heads/master"
+
+        // You can use versionPrefix to set the "base" version number for your library/app. https://andrewlock.net/version-vs-versionsuffix-vs-packageversion-what-do-they-all-mean/#versionprefix
+        const val versionPrefix = "1.0.0"
+        // Is used to set the pre-release label of the version number, if there is one, such as alpha or beta. https://andrewlock.net/version-vs-versionsuffix-vs-packageversion-what-do-they-all-mean/#versionsuffix
+        const val versionSuffix = "beta%build.number%"
+
+    }
+}
 
 project {
 
@@ -12,23 +29,57 @@ project {
     buildType(BuildAndTest)
 }
 
-object GitHubRepo : GitVcsRoot({
-    name = "senior-engineer-home-exercise"
-    url = "https://github.com/ace90210/senior-engineer-home-exercise.git"
-    branch = "refs/heads/main"
-    branchSpec = "+:refs/heads/*"
-    authMethod = anonymous()
+
+object BuildingProject : Project({
+    name = "Building"
+    buildType(BuildWebLinux64)
 })
 
-object BuildAndTest : BuildType({
-    name = "Build & Test"
+object GitHubRepo : GitVcsRoot({
+    name = "senior-engineer-home-exercise"
+    url =  Settings.gitRepo
+    branch = Settings.gitBranch
+})
 
-    vcs {
-        root(GitHubRepo)
+
+// Base configuration for builds and tests
+open class BuildBase(
+        // True to add agents requirements
+        requiresSdk: Boolean)
+    : BuildType() {
+    constructor(requiresSdk: Boolean, init: BuildBase.() -> Unit): this(requiresSdk) {
+        init()
     }
+    init {
+        vcs { root(GitHubRepo) }
+        features {
+            // Clear the checkout directory before building
+            swabra {
+                forceCleanCheckout = true
+            }
+        }
+        if (requiresSdk) {
+            // Agents requirement to have .NET Core SDK 8.0
+            requirements {
+                exists("DotNetCoreSDK8.0_Path")
+            }
+        }
+    }
+}
 
-    steps {
-        dotnet {
+
+// Base configuration to build cross-platform applications
+open class BuildWebBase(
+        runtimeId: String)
+    : BuildBase(true) {
+    init {
+        name = "Build console and web for $runtimeId"
+       
+        params {
+               param("system.InvariantGlobalization", "true")
+        }
+        steps {
+              dotnet {
             name = "Restore"
             command = dotnet.Command.restore
             projects = "src/People.sln"
@@ -51,26 +102,9 @@ object BuildAndTest : BuildType({
                 --results-directory test-results
             """.trimIndent()
         }
+        // Publish the content of bin directory as build artifacts
+        artifactRules = "bin => bin"
     }
+}
 
-    artifactRules = "test-results => test-results"
-
-    features {
-        feature {
-            type = "xml-report-plugin"
-            param("xmlReportParsing.reportType", "vstest")
-            param("xmlReportParsing.reportDirs", "test-results/*.trx")
-        }
-    }
-
-    triggers {
-        vcs {
-            branchFilter = "+:*"
-        }
-    }
-
-    requirements {
-        // Make sure agent has .NET 8 SDK installed
-        exists("DotNetCoreSDK8.0")
-    }
-})
+object BuildWebLinux64: BuildWebBase("linux-x64")

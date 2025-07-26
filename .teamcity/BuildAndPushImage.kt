@@ -1,3 +1,6 @@
+import jetbrains.buildServer.configs.kotlin.v2025_07.*
+import jetbrains.buildServer.configs.kotlin.v2025_07.Project
+import jetbrains.buildServer.configs.kotlin.v2025_07.buildSteps.script
 
 
 

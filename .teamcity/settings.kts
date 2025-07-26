@@ -1,4 +1,4 @@
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
+﻿import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.*
@@ -65,6 +65,14 @@ open class BuildWebBase(
         }
 
         steps {
+            step {
+                name = "Version Check"
+                type = "simpleRunner"
+                param("script.content", """
+                    echo "🔥 Version check: v0.1.3"
+                """.trimIndent())
+            }
+
             step {
                 type = "dotnet"
                 param("command", "restore")

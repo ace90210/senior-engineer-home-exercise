@@ -1,7 +1,9 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dotnet.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.*
+
 
 // TeamCity Kotlin DSL version
 version = "2020.1"
@@ -65,27 +67,23 @@ open class BuildWebBase(
 
         steps {
             dotnet {
-                name = "Restore"
-                command = DotnetCommandType.Restore
-                projects = "src/People.sln"
+                this.name = "Restore"
+                this.command = DotnetCommandType.Restore
+                this.projects = "src/People.sln"
             }
 
             dotnet {
-                name = "Build"
-                command = DotnetCommandType.Build
-                projects = "src/People.sln"
-                args = "--configuration ${Settings.configuration}"
+                this.name = "Build"
+                this.command = DotnetCommandType.Build
+                this.projects = "src/People.sln"
+                this.args = "--configuration ${Settings.configuration}"
             }
 
             dotnet {
-                name = "Test"
-                command = DotnetCommandType.Test
-                projects = "src/People.sln"
-                args = """
-                    --configuration ${Settings.configuration}
-                    --logger trx 
-                    --results-directory test-results
-                """.trimIndent()
+                this.name = "Test"
+                this.command = DotnetCommandType.Test
+                this.projects = "src/People.sln"
+                this.args = "--configuration ${Settings.configuration} --logger trx --results-directory test-results"
             }
         }
 

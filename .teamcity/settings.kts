@@ -64,38 +64,55 @@ open class BuildWebBase(
             param("system.InvariantGlobalization", "true")
         }
 
-        steps {
-            step {
-                name = "Version Check"
-                type = "simpleRunner"
-                param("script.content", """
-                    echo "🔥 Version check: v0.1.3"
-                """.trimIndent())
-            }
+       steps {
+    step {
+        name = "Move Solution to Root"
+        type = "simpleRunner"
+        param("script.content", """
+            echo "🛠 Moving src/* to working directory root..."
+            cp -r src/* .
+        """.trimIndent())
+    }
 
-            step {
-                type = "dotnet"
-                param("command", "restore")
-                param("projects", "People.sln")
-                param("workingDir", "src")
-            }
+    step {
+        name = "Version Check"
+        type = "simpleRunner"
+        param("script.content", """
+            echo "🔥 Version check: v0.1.4"
+        """.trimIndent())
+    } 
+    
+    step {
+        name = "List Files in Working Directory"
+        type = "simpleRunner"
+        param("script.content", """
+            echo "📂 Listing current directory contents:"
+            pwd
+            ls -al
+        """.trimIndent())
+    }
 
-            step {
-                type = "dotnet"
-                param("command", "build")
-                param("projects", "People.sln")
-                param("args", "--configuration ${Settings.configuration}")
-                param("workingDir", "src")
-            }
+    step {
+        type = "dotnet"
+        param("command", "restore")
+        param("projects", "People.sln")
+    }
 
-            step {
-                type = "dotnet"
-                param("command", "test")
-                param("projects", "People.sln")
-                param("args", "--configuration ${Settings.configuration} --logger trx --results-directory ../test-results")
-                param("workingDir", "src")
-            }
-        }
+    step {
+        type = "dotnet"
+        param("command", "build")
+        param("projects", "People.sln")
+        param("args", "--configuration ${Settings.configuration}")
+    }
+
+    step {
+        type = "dotnet"
+        param("command", "test")
+        param("projects", "People.sln")
+        param("args", "--configuration ${Settings.configuration} --logger trx --results-directory test-results")
+    }
+}
+
 
 
         artifactRules = "test-results => test-results"

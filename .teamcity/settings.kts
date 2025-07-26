@@ -1,10 +1,11 @@
-import jetbrains.buildServer.configs.kotlin.v2025_07.*
-import jetbrains.buildServer.configs.kotlin.v2023_07.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.v2023_07.buildFeatures.*
-import jetbrains.buildServer.configs.kotlin.v2023_07.vcs.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.*
+import java.util.*
 
-version = "2025.07"
-
+// TeamCity Kotlin DSL version
+version = "2020.1"
 
 // Build settings
 open class Settings {

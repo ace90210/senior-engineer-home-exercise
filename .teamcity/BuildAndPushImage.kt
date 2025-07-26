@@ -2,11 +2,6 @@ import jetbrains.buildServer.configs.kotlin.v2025_07.*
 import jetbrains.buildServer.configs.kotlin.v2025_07.Project
 import jetbrains.buildServer.configs.kotlin.v2025_07.buildSteps.script
 
-
-
-version = "2025.07"
-
-
 object BuildAndPushImage : BuildType({
     name = "Build, Test, and Push Docker Image"
 
@@ -57,7 +52,3 @@ object BuildAndPushImage : BuildType({
         exists("docker.server.version")
     }
 })
-
-project {
-    buildType(BuildAndPushImage)
-}

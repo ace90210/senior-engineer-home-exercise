@@ -71,7 +71,7 @@ open class BuildWebBase(
                 name = "Print Script Version"
                 type = "simpleRunner"
                 param("script.content", """
-                    echo "🔥 Version check: v0.1.5"
+                    echo "🔥 Version check: v0.1.6"
                 """.trimIndent())
             } 
             step {
@@ -101,6 +101,18 @@ open class BuildWebBase(
                 param("command", "test")
                 param("projects", "People.sln")
                 param("args", "--configuration ${Settings.configuration} --logger trx --results-directory test-results")
+            }
+
+            step {
+                name = "Docker Build and Push"
+                type = "simpleRunner"
+                param("script.content", """
+                    echo "🐳 Building Docker image..."
+                    docker build -t localhost:5000/people-app:latest .
+
+                    echo "📤 Pushing image to local registry..."
+                    docker push localhost:5000/people-app:latest
+                """.trimIndent())
             }
         }
 

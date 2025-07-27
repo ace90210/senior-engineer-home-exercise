@@ -109,11 +109,11 @@ open class BuildWebBase(
                 param("script.content", """
                     echo "🐳 Building Docker image..."
                     # Use sudo for commands that need root privileges
-                    sudo docker build -t localhost:5000/people-app:latest .
+                    docker build -t localhost:5000/people-app:latest .
 
                     echo "📤 Pushing image to local registry..."
                     # Use sudo for commands that need root privileges
-                    sudo docker push localhost:5000/people-app:latest
+                    docker push localhost:5000/people-app:latest
                 """.trimIndent())
             }
         }

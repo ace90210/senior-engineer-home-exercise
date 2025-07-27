@@ -21,12 +21,8 @@ RUN sudo apt-get update && \
     sudo rm -rf /var/lib/apt/lists/*
 
 
-# Switch to root to install packages
-USER root
-
-# Allow the 'buildagent' user to use sudo without a password
-RUN echo "buildagent ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
+# Create a 'docker' group with the host's GID and add the buildagent user
+RUN groupadd -g ${DOCKER_GID} docker && usermod -aG docker buildagent
 
 # Switch back to the default non-root user.
 # This is good practice, and the final GID will be overridden by docker-compose.

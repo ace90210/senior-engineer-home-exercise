@@ -108,10 +108,12 @@ open class BuildWebBase(
                 type = "simpleRunner"
                 param("script.content", """
                     echo "🐳 Building Docker image..."
-                    docker build -t registry:5000/people-app:latest .
+                    # Use sudo for commands that need root privileges
+                    sudo docker build -t registry:5000/people-app:latest .
 
                     echo "📤 Pushing image to local registry..."
-                    docker push registry:5000/people-app:latest
+                    # Use sudo for commands that need root privileges
+                    sudo docker push registry:5000/people-app:latest
                 """.trimIndent())
             }
         }

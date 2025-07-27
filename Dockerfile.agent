@@ -21,7 +21,7 @@ RUN sudo apt-get update && \
     sudo rm -rf /var/lib/apt/lists/*
 
 
-# Switch to root to install packages
+# Switch to root to add build agent user sudo access (tmp workaround)
 USER root
 
 # Allow the 'buildagent' user to use sudo without a password

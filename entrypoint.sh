@@ -1,16 +1,23 @@
 #!/bin/bash
 set -e
 
-# Get the GID of the Docker socket on the host
-DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+echo "👉 Setting up Docker group permissions"
 
-# Create the docker group inside the container if needed
+# Get the GID of the mounted Docker socket
+DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+echo "📦 Detected Docker socket GID: $DOCKER_GID"
+
+# Create docker group with host's GID if not already present
 if ! getent group docker >/dev/null; then
   sudo groupadd -g "$DOCKER_GID" docker || true
+else
+  echo "🔁 Docker group already exists"
 fi
 
-# Add 'agent' to the docker group
-sudo usermod -aG docker agent
+# Add buildagent to the docker group
+sudo usermod -aG docker buildagent
+echo "👤 Added buildagent to docker group"
 
-# Run the TeamCity agent (default CMD/ENTRYPOINT from the base image)
-exec /run-agent.sh
+# Switch to 'buildagent' user with updated groups
+echo "🚀 Switching to buildagent user"
+exec sudo -E -u buildagent /run-agent.sh

@@ -90,6 +90,36 @@ ports:
 
 Enables `docker compose up` to start the API locally.
 
+
+---
+
+## ⚙️ Running the TeamCity CI
+
+To run the CI you need to:
+* run build.ps1  
+* when complete proceed with the install of team city using default settings
+* click create project
+* use this url for the repository: https://github.com/ace90210/senior-engineer-home-exercise
+* click proceed
+* select to import settings.kts and proceed with default settings
+* **important**
+* add the agent as a authorised agent
+   * go to the agents tab and find the unauthorised agent from the list
+   * add this agent as authorised
+   * go back to the project 
+* Run the CI
+
+📽️ See a demo video here: [Watch on YouTube](https://youtu.be/b-o_vSLEl3Q)
+
+
+
+### In Progress / Blockers
+
+* agent is not automatically registered in team city, **You must register it as an authorised agent first!**
+* I did not manage to fully remote root/sudo requirement from the agent container. this was because it was required for running docker push and i did not get time to resolve this properly
+
+---
+
 ---
 
 ## ⚙️ TeamCity CI Stack
@@ -102,14 +132,12 @@ Enables `docker compose up` to start the API locally.
   * `teamcity-agent` from `Dockerfile.agent`
   * Local Docker `registry` (on port 5000)
 * Agent has Docker CLI installed and mounts `/var/run/docker.sock`.
+* kotlin settings.kts setup to run deployment stages
 
 ### In Progress / Blockers
 
-* **Kotlin DSL** (`/.teamcity/settings.kts`) setup was **not completed** due to lack of prior experience.
-* Initial Kotlin files were started but **did not compile** correctly.
-* Spent significant time troubleshooting, but with limited Kotlin DSL experience and timebox constraints (4h), I was unable to complete this portion.
-
-> I relied on AI tools for Kotlin DSL scaffolding, but they did not generate a working setup. This was the main area I fell short on.
+* agent is not automatically registered in team city, **You must register it as an authorised agent first!**
+* I did not manage to fully remote root/sudo requirement from the agent container. this was because it was required for running docker push and i did not get time to resolve this properly
 
 ---
 
@@ -121,19 +149,13 @@ A PowerShell helper script is provided to bring up the CI stack and poll readine
 ci-up
 ```
 
-Or manually:
-
-```bash
-docker compose -f compose.ci.yml up -d && open http://localhost:8111
-```
-
 ---
 
 ## 🧾 Deliverable Structure
 
 ```
 ├── .teamcity/
-│   └── settings.kts         # (incomplete) Kotlin DSL config
+│   └── settings.kts         
 ├── src/
 │   ├── People.Api/
 │   ├── People.Data/
@@ -164,12 +186,12 @@ docker compose -f compose.ci.yml up -d && open http://localhost:8111
 I hit some challenges and this is far from my best work sadly a number of compounding challenges delayed me more than expected. they included
 * using records with validation was new to me and had unexpected quirks
 * moving the docker file to the root combined with my mistake using the auto generated docker and moving it, i normally keep it in the project, i know how to move it but didnt realise the pre built docker project *really* does not like being moved and caused me all sorts or trouble before i just removed and did it manually
-* had no time to learn kotlin so was unable to get it working
+* had no time to learn kotlin so i made the tragic mistake of trying to cut corners by using AI, lost quite abit of time on this before i just looked up the official template from jetbrains for dotnet deploys and reverts engineered it to my needs.
 
 
 If given additional time, I would focus next on:
 
-* Finishing the Kotlin DSL build steps and registry push.
+* fix the workaround issue in the teamcity agent where i use sudo
 * Expanding unit test coverage.
 * Adding input model separation and improved validation handling for minimal API idioms.
 

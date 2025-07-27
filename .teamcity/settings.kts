@@ -71,7 +71,7 @@ open class BuildWebBase(
                 name = "Print Script Version"
                 type = "simpleRunner"
                 param("script.content", """
-                    echo "🔥 Version check: v0.1.6"
+                    echo "🔥 Version check: v0.1.7"
                 """.trimIndent())
             } 
             step {
@@ -108,10 +108,10 @@ open class BuildWebBase(
                 type = "simpleRunner"
                 param("script.content", """
                     echo "🐳 Building Docker image..."
-                    docker build -t localhost:5000/people-app:latest .
+                    docker build -t registry:5000/people-app:latest .
 
                     echo "📤 Pushing image to local registry..."
-                    docker push localhost:5000/people-app:latest
+                    docker push registry:5000/people-app:latest
                 """.trimIndent())
             }
         }
